@@ -546,7 +546,7 @@ class TeekoMenu:
             "Phase 2 — Mouvement :\n"
             "À partir de ce moment, les joueurs déplacent l’une de leurs pièces\n"
             "vers une case vide adjacente (horizontalement, verticalement ou en diagonale).\n\n"
-            "🎯 Objectif :\n"
+            "Objectif :\n"
             "Former l’un des motifs suivants :\n"
             "• 4 pièces alignées (ligne, colonne ou diagonale)\n"
             "• ou un carré 2×2.\n\n"
@@ -595,3 +595,4 @@ class TeekoMenu:
 # ------------------ Run ------------------
 if __name__ == "__main__":
     TeekoMenu()
+
