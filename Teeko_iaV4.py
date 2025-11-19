@@ -5,6 +5,12 @@ import random
 import math
 import copy
 
+def style_button(btn):
+    btn.configure(bg="#00a651", fg="#ffffff", font=("Arial", 12, "bold"), bd=0, relief="flat", padx=10, pady=5)
+    btn.bind("<Enter>", lambda e: btn.configure(bg="#009344"))
+    btn.bind("<Leave>", lambda e: btn.configure(bg="#00a651"))
+
+
 # ---------------- Constants ----------------
 SIZE = 5
 CELL_SIZE = 90
@@ -52,16 +58,17 @@ class TeekoGame:
         self.canvas.grid(row=0, column=0, columnspan=3)
         self.canvas.bind("<Button-1>", self.on_click)
 
-        self.label_info = tk.Label(self.frame, text=self._info_text(), font=("Arial", 12))
+        self.label_info = tk.Label(self.frame, text=self._info_text(), font=("Arial", 14, "bold"), fg="#333333", bg="#f0f0f0")
         self.label_info.grid(row=1, column=0, sticky="w", padx=6, pady=6)
 
-        self.label_eval = tk.Label(self.frame, text="", font=("Arial", 10))
+        self.label_eval = tk.Label(self.frame, text="", font=("Arial", 12), fg="#555555", bg="#f0f0f0")
         self.label_eval.grid(row=1, column=1, sticky="e", padx=6, pady=6)
 
         self.btn_menu = tk.Button(self.frame, text="Retour au menu", command=self._return_to_menu)
         self.btn_menu.grid(row=1, column=2, sticky="e", padx=6, pady=6)
-
+        style_button(self.btn_menu)  
         self.draw_board()
+     
 
         # If AI is to move first (human chose O), let IA play
         if self.ai_mode and self.turn == self.ai_side:
@@ -96,27 +103,37 @@ class TeekoGame:
     # ---------------- Drawing ----------------
     def draw_board(self):
         self.canvas.delete("all")
+        self.canvas.configure(bg="#f0d9b5")  # Chess.com light board color
+
         for r in range(SIZE):
             for c in range(SIZE):
                 x1 = c * CELL_SIZE
                 y1 = r * CELL_SIZE
                 x2 = x1 + CELL_SIZE
                 y2 = y1 + CELL_SIZE
-                # Draw rectangle with slight offset so borders are visible
-                self.canvas.create_rectangle(x1+3, y1+3, x2, y2, outline="black", width=2)
+                # draw subtle grid lines
+                self.canvas.create_rectangle(x1, y1, x2, y2, outline="#b58863", width=2)
+
                 piece = self.board[r][c]
                 if piece != EMPTY:
-                    color = COLORS[piece]
-                    self.canvas.create_oval(x1+12, y1+12, x2-12, y2-12, fill=color, outline="black")
+                    color = "#000000" if piece==PLAYER1 else "#fffacd"  # black & cream pieces
+                    self.canvas.create_oval(x1+15, y1+15, x2-15, y2-15, fill=color, outline="#555555", width=2)
+
+        # highlight selected piece
         if self.selected_piece:
             r, c = self.selected_piece
             x1 = c * CELL_SIZE
             y1 = r * CELL_SIZE
             x2 = x1 + CELL_SIZE
             y2 = y1 + CELL_SIZE
-            self.canvas.create_rectangle(x1+2, y1+2, x2, y2, outline="gold", width=4)
-        # update labels but do not clear eval unless requested
+            self.canvas.create_rectangle(x1+2, y1+2, x2-2, y2-2, outline="#00ff00", width=4)    
+
+        # update labels
         self._update_labels()
+
+    
+    
+
 
     # ---------------- Input Handling ----------------
     def on_click(self, event):
@@ -593,20 +610,34 @@ class TeekoMenu:
         self.human_color = PLAYER1  # default human = X
         self.show_eval = False
 
-        tk.Label(self.root, text="Bienvenue dans Teeko !", font=("Arial", 16)).pack(pady=10)
+        tk.Label(self.root, text="Bienvenue dans Teeko !", font=("Arial", 16, "bold"), 
+                 fg="#333333", bg="#f0f0f0").pack(pady=10)
 
-        tk.Button(self.root, text=" Jouer à deux", font=("Arial", 14), width=25,
-                  command=self.start_pvp).pack(pady=6)
-        tk.Button(self.root, text=" Jouer contre l'IA", font=("Arial", 14), width=25,
-                  command=self.start_vs_ai).pack(pady=6)
-        tk.Button(self.root, text="AI vs AI", font=("Arial", 14), width=25,
-                  command=self.start_ai_vs_ai).pack(pady=6)
-        tk.Button(self.root, text="Règles du jeu", font=("Arial", 12), width=25,
-                  command=self.show_rules).pack(pady=6)
-        tk.Button(self.root, text=" Quitter", font=("Arial", 12), width=25,
-                  command=self.root.quit).pack(pady=6)
+        btn_pvp = tk.Button(self.root, text=" Jouer à deux", command=self.start_pvp)
+        btn_pvp.pack(pady=6)
+        style_button(btn_pvp)
+
+        btn_vs_ai = tk.Button(self.root, text=" Jouer contre l'IA", command=self.start_vs_ai)
+        btn_vs_ai.pack(pady=6)
+        style_button(btn_vs_ai)
+
+        btn_ai_vs_ai = tk.Button(self.root, text="AI vs AI", command=self.start_ai_vs_ai)
+        btn_ai_vs_ai.pack(pady=6)
+        style_button(btn_ai_vs_ai)
+
+        btn_rules = tk.Button(self.root, text="Règles du jeu", command=self.show_rules)
+        btn_rules.pack(pady=6)
+        style_button(btn_rules)
+
+        btn_quit = tk.Button(self.root, text="Quitter", command=self.root.quit)
+        btn_quit.pack(pady=6)
+        style_button(btn_quit)
+
+        # Set root background to match Chess.com style
+        self.root.configure(bg="#f0f0f0")
 
         self.root.mainloop()
+
 
     def start_pvp(self):
         self.root.destroy()
@@ -635,24 +666,36 @@ class TeekoMenu:
         s = tk.Toplevel(self.root)
         s.title("Paramètres AI vs AI")
         s.geometry("600x500")
+        s.configure(bg="#f0f0f0")  # Chess.com style background
         s.transient(self.root)
 
-        # AI levels
-        tk.Label(s, text="Niveau AI 1:", font=("Arial", 11)).pack(anchor="w", padx=10, pady=(8,0))
+        # Title label
+        tk.Label(s, text="Paramètres AI vs AI", font=("Arial", 16, "bold"), fg="#333333", bg="#f0f0f0").pack(pady=15)
+
+        # AI 1 level
+        tk.Label(s, text="Niveau AI 1:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w", padx=20, pady=(10,0))
         ai1_var = tk.IntVar(value=3)
         for name, depth in DIFFICULTIES.items():
-            tk.Radiobutton(s, text=name, variable=ai1_var, value=depth).pack(anchor="w", padx=20)
+            rb = tk.Radiobutton(s, text=name, variable=ai1_var, value=depth, font=("Arial", 11), bg="#f0f0f0", anchor="w")
+            rb.pack(anchor="w", padx=40)
 
-        tk.Label(s, text="Niveau AI 2:", font=("Arial", 11)).pack(anchor="w", padx=10, pady=(8,0))
+        # AI 2 level
+        tk.Label(s, text="Niveau AI 2:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w", padx=20, pady=(10,0))
         ai2_var = tk.IntVar(value=3)
         for name, depth in DIFFICULTIES.items():
-            tk.Radiobutton(s, text=name, variable=ai2_var, value=depth).pack(anchor="w", padx=20)
+            rb = tk.Radiobutton(s, text=name, variable=ai2_var, value=depth, font=("Arial", 11), bg="#f0f0f0", anchor="w")
+            rb.pack(anchor="w", padx=40)
 
         # Play mode
-        tk.Label(s, text="Mode de jeu:", font=("Arial", 11)).pack(anchor="w", padx=10, pady=(8,0))
+        tk.Label(s, text="Mode de jeu:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w", padx=20, pady=(10,0))
         mode_var = tk.StringVar(value="auto")
-        tk.Radiobutton(s, text="Automatique", variable=mode_var, value="auto").pack(anchor="w", padx=20)
-        tk.Radiobutton(s, text="Step by Step", variable=mode_var, value="step").pack(anchor="w", padx=20)
+        tk.Radiobutton(s, text="Automatique", variable=mode_var, value="auto", font=("Arial", 11), bg="#f0f0f0", anchor="w").pack(anchor="w", padx=40)
+        tk.Radiobutton(s, text="Step by Step", variable=mode_var, value="step", font=("Arial", 11), bg="#f0f0f0", anchor="w").pack(anchor="w", padx=40)
+
+        # Start button
+        btn_start = tk.Button(s, text="Démarrer AI vs AI", font=("Arial", 12, "bold"), command=lambda: apply_and_start())
+        btn_start.pack(pady=20)
+        style_button(btn_start)
 
         def apply_and_start():
             ai1_level = ai1_var.get()
@@ -666,14 +709,13 @@ class TeekoMenu:
                             return_to_menu_cb=self.show_menu)
             w.mainloop()
 
-        tk.Button(s, text="Démarrer AI vs AI", command=apply_and_start).pack(pady=10)
         s.grab_set()
         s.wait_window()
 
 
     def show_rules(self):
-        """Display the rules of Teeko in a message box."""
-        rules = (
+        """Display the rules of Teeko in a styled window."""
+        rules_text = (
             "📜 RÈGLES DU JEU TEEKO\n\n"
             "• Le jeu se joue sur une grille 5×5.\n"
             "• Chaque joueur possède 4 pièces (X et O).\n"
@@ -690,7 +732,33 @@ class TeekoMenu:
             "• ou un carré 2×2.\n\n"
             "Le premier joueur à réussir cela gagne la partie !"
         )
-        messagebox.showinfo("Règles du jeu", rules)    
+
+        # Create styled Toplevel window
+        w = tk.Toplevel(self.root)
+        w.title("Règles du jeu")
+        w.geometry("600x500")
+        w.configure(bg="#f0f0f0")  # Chess.com style background
+        w.transient(self.root)
+
+        # Title
+        tk.Label(w, text="Règles du jeu Teeko", font=("Arial", 16, "bold"), fg="#333333", bg="#f0f0f0").pack(pady=15)
+
+        # Text area with rules
+        text_frame = tk.Frame(w, bg="#f0f0f0")
+        text_frame.pack(fill="both", expand=True, padx=20, pady=10)
+
+        rules_label = tk.Label(text_frame, text=rules_text, font=("Arial", 12), justify="left",
+                            wraplength=550, fg="#333333", bg="#f0f0f0")
+        rules_label.pack(anchor="nw")
+
+        # Close button
+        btn_close = tk.Button(w, text="Fermer", font=("Arial", 12, "bold"), command=w.destroy)
+        btn_close.pack(pady=15)
+        style_button(btn_close)
+
+        w.grab_set()
+        w.wait_window()
+    
 
     def show_menu(self):
         # relaunch menu
@@ -698,25 +766,38 @@ class TeekoMenu:
 
     def open_settings(self, modal=False):
         s = tk.Toplevel(self.root)
-        s.title("Paramètres")
-        s.geometry("360x320")
+        s.title("Paramètres IA")
+        s.geometry("400x380")
+        s.configure(bg="#f0f0f0")
         s.transient(self.root)
 
+        # Title
+        tk.Label(s, text="Paramètres du jeu", font=("Arial", 16, "bold"), fg="#333333", bg="#f0f0f0").pack(pady=15)
+
+        content_frame = tk.Frame(s, bg="#f0f0f0")
+        content_frame.pack(fill="both", expand=True, padx=20)
+
         # Difficulty
-        tk.Label(s, text="Difficulté IA:", font=("Arial", 11)).pack(anchor="w", padx=10, pady=(8,0))
+        tk.Label(content_frame, text="Difficulté IA:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w", pady=(0,5))
         diff_var = tk.StringVar(value=self.ai_difficulty)
         for name in DIFFICULTIES.keys():
-            tk.Radiobutton(s, text=name, variable=diff_var, value=name).pack(anchor="w", padx=20)
+            tk.Radiobutton(content_frame, text=name, variable=diff_var, value=name, font=("Arial", 11), bg="#f0f0f0").pack(anchor="w", padx=10, pady=2)
 
         # Color choice
-        tk.Label(s, text="Couleur du joueur (X commence):", font=("Arial", 11)).pack(anchor="w", padx=10, pady=(8,0))
+        tk.Label(content_frame, text="Couleur du joueur (X commence):", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w", pady=(10,5))
         color_var = tk.StringVar(value=self.human_color)
-        tk.Radiobutton(s, text="Jouer X (commence)", variable=color_var, value=PLAYER1).pack(anchor="w", padx=20)
-        tk.Radiobutton(s, text="Jouer O (IA commence)", variable=color_var, value=PLAYER2).pack(anchor="w", padx=20)
+        tk.Radiobutton(content_frame, text="Jouer X (commence)", variable=color_var, value=PLAYER1, font=("Arial", 11), bg="#f0f0f0").pack(anchor="w", padx=10, pady=2)
+        tk.Radiobutton(content_frame, text="Jouer O (IA commence)", variable=color_var, value=PLAYER2, font=("Arial", 11), bg="#f0f0f0").pack(anchor="w", padx=10, pady=2)
 
         # Show eval checkbox
         show_var = tk.BooleanVar(value=self.show_eval)
-        tk.Checkbutton(s, text="Afficher évaluation Minimax pendant la partie", variable=show_var).pack(anchor="w", padx=10, pady=10)
+        tk.Checkbutton(content_frame, text="Afficher évaluation Minimax pendant la partie", variable=show_var,
+                    font=("Arial", 11), bg="#f0f0f0").pack(anchor="w", pady=(10,5))
+
+        # Apply button
+        btn_apply = tk.Button(s, text="Appliquer", font=("Arial", 12, "bold"), command=lambda: apply_and_close())
+        btn_apply.pack(pady=15)
+        style_button(btn_apply)
 
         def apply_and_close():
             self.ai_difficulty = diff_var.get()
@@ -724,11 +805,10 @@ class TeekoMenu:
             self.show_eval = show_var.get()
             s.destroy()
 
-        tk.Button(s, text="Appliquer", command=apply_and_close).pack(pady=10)
-
         if modal:
             s.grab_set()
             s.wait_window()
+
 
 # ------------------ Run ------------------
 if __name__ == "__main__":
