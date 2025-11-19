@@ -495,6 +495,8 @@ class TeekoMenu:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Menu Teeko")
+        self.root.state('zoomed')
+
 
         self.ai_difficulty = "Moyen"
         self.human_color = PLAYER1  # default human = X
@@ -516,6 +518,7 @@ class TeekoMenu:
     def start_pvp(self):
         self.root.destroy()
         w = tk.Tk()
+        w.state('zoomed')
         TeekoGame(w, ai_mode=False, human_side=self.human_color,
                  minimax_depth=DIFFICULTIES[self.ai_difficulty],
                  show_eval=self.show_eval,
@@ -527,6 +530,7 @@ class TeekoMenu:
         self.open_settings(modal=True)
         self.root.destroy()
         w = tk.Tk()
+        w.state('zoomed')
         TeekoGame(w, ai_mode=True, human_side=self.human_color,
                  minimax_depth=DIFFICULTIES[self.ai_difficulty],
                  show_eval=self.show_eval,
