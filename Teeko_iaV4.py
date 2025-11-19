@@ -490,6 +490,97 @@ class TeekoGame:
 
         return score
 
+# ------------------ Ai vs Ai game mode ------------------
+
+# ------------------ AI vs AI Class ------------------
+class TeekoGameAIvsAI(TeekoGame):
+    def __init__(self, root, *, ai1_level=3, ai2_level=3, step_mode=False, return_to_menu_cb=None):
+        # AI vs AI: override parent AI scheduling
+        super().__init__(root, ai_mode=True, human_side=PLAYER1, minimax_depth=3,
+                         show_eval=False, return_to_menu_cb=return_to_menu_cb)
+        self.ai1_level = ai1_level
+        self.ai2_level = ai2_level
+        self.step_mode = step_mode
+        self.turn = PLAYER1
+        self.total_pieces = 0
+
+        # Disable parent AI scheduling
+        self.auto_ai_schedule = False
+
+        # Add labels below the board
+        self.label_ai1 = tk.Label(self.frame, text=f"AI 1: Level {self.ai1_level}, Color {PLAYER1}", font=("Arial", 12))
+        self.label_ai1.grid(row=2, column=0, pady=6)
+
+        self.label_ai2 = tk.Label(self.frame, text=f"AI 2: Level {self.ai2_level}, Color {PLAYER2}", font=("Arial", 12))
+        self.label_ai2.grid(row=2, column=2, pady=6)
+
+        # Step button for manual mode
+        if self.step_mode:
+            self.btn_next = tk.Button(self.frame, text="Next Turn", command=self.next_turn)
+            self.btn_next.grid(row=2, column=1, pady=6)
+
+        # Start first move automatically if auto mode
+        if not self.step_mode:
+            self.root.after(300, self.ai_turn)
+
+    # Override to remove automatic turn advancement in parent
+    def apply_target(self, target, player):
+        """Apply a move without switching turns automatically."""
+        if self.total_pieces < 8:
+            r, c = target
+            self.board[r][c] = player
+            self.total_pieces += 1
+        else:
+            tr, tc = target
+            candidates = []
+            for dr in (-1,0,1):
+                for dc in (-1,0,1):
+                    if dr==0 and dc==0:
+                        continue
+                    sr, sc = tr+dr, tc+dc
+                    if 0<=sr<SIZE and 0<=sc<SIZE and self.board[sr][sc]==player:
+                        candidates.append((sr, sc))
+            if candidates:
+                # pick first reachable piece (simpler)
+                sr, sc = candidates[0]
+                self.board[sr][sc] = EMPTY
+                self.board[tr][tc] = player
+
+        self.draw_board()
+        # check for win
+        if self.check_win(player):
+            messagebox.showinfo("Game Over", f"AI {player} wins!")
+            return True
+        return False
+
+    def ai_turn(self):
+        # Determine depth for this AI
+        depth = self.ai1_level if self.turn==PLAYER1 else self.ai2_level
+        maximizing = (self.turn==PLAYER1)
+        move, _ = self.minimax(self.board, depth, -math.inf, math.inf, maximizing=maximizing)
+        if move:
+            game_over = self.apply_target(move, self.turn)
+            if game_over:
+                return
+
+        # Switch turn manually
+        self.turn = PLAYER1 if self.turn==PLAYER2 else PLAYER2
+
+        # Schedule next turn only in auto mode
+        if not self.step_mode:
+            self.root.after(1000, self.ai_turn)
+
+    def next_turn(self):
+        """Manual step mode: execute a single AI move."""
+        self.ai_turn()
+
+    # Override _info_text to hide human/AI labels
+    def _info_text(self):
+        return f"Tour: {self.turn}"
+
+
+
+
 # ------------------ Menu / Settings UI ------------------
 class TeekoMenu:
     def __init__(self):
@@ -508,6 +599,8 @@ class TeekoMenu:
                   command=self.start_pvp).pack(pady=6)
         tk.Button(self.root, text=" Jouer contre l'IA", font=("Arial", 14), width=25,
                   command=self.start_vs_ai).pack(pady=6)
+        tk.Button(self.root, text="AI vs AI", font=("Arial", 14), width=25,
+                  command=self.start_ai_vs_ai).pack(pady=6)
         tk.Button(self.root, text="Règles du jeu", font=("Arial", 12), width=25,
                   command=self.show_rules).pack(pady=6)
         tk.Button(self.root, text=" Quitter", font=("Arial", 12), width=25,
@@ -536,6 +629,47 @@ class TeekoMenu:
                  show_eval=self.show_eval,
                  return_to_menu_cb=self.show_menu)
         w.mainloop()
+
+    def start_ai_vs_ai(self):
+        # Open modal to choose AI levels and step/auto mode
+        s = tk.Toplevel(self.root)
+        s.title("Paramètres AI vs AI")
+        s.geometry("600x500")
+        s.transient(self.root)
+
+        # AI levels
+        tk.Label(s, text="Niveau AI 1:", font=("Arial", 11)).pack(anchor="w", padx=10, pady=(8,0))
+        ai1_var = tk.IntVar(value=3)
+        for name, depth in DIFFICULTIES.items():
+            tk.Radiobutton(s, text=name, variable=ai1_var, value=depth).pack(anchor="w", padx=20)
+
+        tk.Label(s, text="Niveau AI 2:", font=("Arial", 11)).pack(anchor="w", padx=10, pady=(8,0))
+        ai2_var = tk.IntVar(value=3)
+        for name, depth in DIFFICULTIES.items():
+            tk.Radiobutton(s, text=name, variable=ai2_var, value=depth).pack(anchor="w", padx=20)
+
+        # Play mode
+        tk.Label(s, text="Mode de jeu:", font=("Arial", 11)).pack(anchor="w", padx=10, pady=(8,0))
+        mode_var = tk.StringVar(value="auto")
+        tk.Radiobutton(s, text="Automatique", variable=mode_var, value="auto").pack(anchor="w", padx=20)
+        tk.Radiobutton(s, text="Step by Step", variable=mode_var, value="step").pack(anchor="w", padx=20)
+
+        def apply_and_start():
+            ai1_level = ai1_var.get()
+            ai2_level = ai2_var.get()
+            step_mode = (mode_var.get() == "step")
+            s.destroy()
+            self.root.destroy()
+            w = tk.Tk()
+            w.state('zoomed')
+            TeekoGameAIvsAI(w, ai1_level=ai1_level, ai2_level=ai2_level, step_mode=step_mode,
+                            return_to_menu_cb=self.show_menu)
+            w.mainloop()
+
+        tk.Button(s, text="Démarrer AI vs AI", command=apply_and_start).pack(pady=10)
+        s.grab_set()
+        s.wait_window()
+
 
     def show_rules(self):
         """Display the rules of Teeko in a message box."""
