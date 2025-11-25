@@ -33,7 +33,9 @@ class TeekoGame:
                  human_side=PLAYER1,
                  minimax_depth=3,
                  show_eval=False,
-                 return_to_menu_cb=None):
+                 return_to_menu_cb=None,
+                 pos_nb=0,
+                 pos=None):
         self.root = root
         self.ai_mode = ai_mode
         self.human_side = human_side
@@ -41,6 +43,11 @@ class TeekoGame:
         self.minimax_depth = minimax_depth
         self.show_eval = show_eval
         self.return_to_menu_cb = return_to_menu_cb
+        self.pos_nb = pos_nb
+        if pos is None:
+            self.pos = []
+        else:
+            self.pos = pos
 
         self.board = [[EMPTY for _ in range(SIZE)] for _ in range(SIZE)]
         self.turn = PLAYER1  # X always starts
@@ -103,7 +110,7 @@ class TeekoGame:
     # ---------------- Drawing ----------------
     def draw_board(self):
         self.canvas.delete("all")
-        self.canvas.configure(bg="#f0d9b5")  # Chess.com light board color
+        self.canvas.configure(bg="#f0d9b5")
 
         for r in range(SIZE):
             for c in range(SIZE):
@@ -177,9 +184,14 @@ class TeekoGame:
             self.board[r1][c1] = EMPTY
             self.board[r][c] = self.turn
             self.selected_piece = None
+            self.pos_nb += 1
             if self.check_win(self.turn):
                 self.draw_board()
                 self.end_game(self.turn)
+                return
+            if self.check_draw(self.turn):
+                self.draw_board()
+                self.end_game_draw()
                 return
             self._advance_turn()
 
@@ -222,15 +234,45 @@ class TeekoGame:
                 if all(board[r + i][c + j] == player for i in range(2) for j in range(2)):
                     return True
         return False
+    
+
 
     def check_win(self, player):
         return self.check_win_board(self.board, player)
+    
+    def check_draw(self, player):
+        # Nulle après 15 coups
+        if self.pos_nb == 30:
+            return True
+        
+        # Signature immuable du plateau
+        current_signature = tuple(tuple(row) for row in self.board)
+        
+        # Ajoute signature actuelle
+        self.pos.append(current_signature)
+        
+        count = self.pos.count(current_signature)
+        
+        if count >= 3:
+            return True
+        
+        if len(self.pos) > 10:
+            self.pos.pop(0)
+        
+        return False
+
 
     # ---------------- End game ----------------
     def end_game(self, winner):
         messagebox.showinfo("Victoire", f"🎉 Le joueur {winner} a gagné !")
         # keep window open but unbind clicks
         self.canvas.unbind("<Button-1>")
+    
+    def end_game_draw(self):
+        messagebox.showinfo("Egalité",f"Egalité après 15 coups ou position repétée 3 fois")
+        # keep window open but unbind clicks
+        self.canvas.unbind("<Button-1>")
+    
 
     # ---------------- AI Entry ----------------
     def ai_play(self):
@@ -273,10 +315,9 @@ class TeekoGame:
         for t in opp_targets:
             newb = self.simulate_move(self.board, t, self.human_side)
             if self.check_win_board(newb, self.human_side):
-                # can we play on that target? if AI can reach that same cell, play there
                 if t in ai_targets:
                     return t
-                # otherwise let minimax handle (no direct block reachable)
+                # otherwise let minimax handle
         return None
 
     # ---------------- Generate targets ----------------
@@ -393,9 +434,14 @@ class TeekoGame:
                     self.board[tr][tc] = player
 
         # after applying, check win and advance turn
+        self.pos_nb += 1
         if self.check_win_board(self.board, player):
             self.draw_board()
             self.end_game(player)
+            return
+        if self.check_draw(self.turn):
+            self.draw_board()
+            self.end_game_draw()
             return
         # next turn
         self.turn = PLAYER1 if self.turn == PLAYER2 else PLAYER2
@@ -565,8 +611,13 @@ class TeekoGameAIvsAI(TeekoGame):
 
         self.draw_board()
         # check for win
+        self.pos_nb+=0.5
         if self.check_win(player):
             messagebox.showinfo("Game Over", f"AI {player} wins!")
+            return True
+        if self.check_draw(self.turn):
+            self.draw_board()
+            self.end_game_draw()
             return True
         return False
 
@@ -813,4 +864,3 @@ class TeekoMenu:
 # ------------------ Run ------------------
 if __name__ == "__main__":
     TeekoMenu()
-
