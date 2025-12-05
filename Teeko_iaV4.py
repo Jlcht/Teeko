@@ -5,7 +5,6 @@ import random
 import math
 import copy
 
-
 def style_button(btn):
     btn.configure(bg="#00a651", fg="#ffffff", font=("Arial", 12, "bold"), bd=0, relief="flat", padx=10, pady=5)
     btn.bind("<Enter>", lambda e: btn.configure(bg="#009344"))
@@ -15,7 +14,7 @@ def style_button(btn):
 # ---------------- Constants ----------------
 SIZE = 5
 CELL_SIZE = 90
-PLAYER1 = "X"  # X goes first by rule
+PLAYER1 = "X"   # X goes first by rule
 PLAYER2 = "O"
 EMPTY = "."
 COLORS = {PLAYER1: "black", PLAYER2: "beige", EMPTY: "grey"}
@@ -26,7 +25,6 @@ DIFFICULTIES = {
     "Moyen": 3,
     "Difficile": 5
 }
-
 
 # ------------------ Main Game Class ------------------
 class TeekoGame:
@@ -63,12 +61,11 @@ class TeekoGame:
         self.root.title("Teeko")
         self.frame = tk.Frame(self.root)
         self.frame.pack()
-        self.canvas = tk.Canvas(self.frame, width=SIZE * CELL_SIZE, height=SIZE * CELL_SIZE, bg="white")
+        self.canvas = tk.Canvas(self.frame, width=SIZE*CELL_SIZE, height=SIZE*CELL_SIZE, bg="white")
         self.canvas.grid(row=0, column=0, columnspan=3)
         self.canvas.bind("<Button-1>", self.on_click)
 
-        self.label_info = tk.Label(self.frame, text=self._info_text(), font=("Arial", 14, "bold"), fg="#333333",
-                                   bg="#f0f0f0")
+        self.label_info = tk.Label(self.frame, text=self._info_text(), font=("Arial", 14, "bold"), fg="#333333", bg="#f0f0f0")
         self.label_info.grid(row=1, column=0, sticky="w", padx=6, pady=6)
 
         self.label_eval = tk.Label(self.frame, text="", font=("Arial", 12), fg="#555555", bg="#f0f0f0")
@@ -76,8 +73,9 @@ class TeekoGame:
 
         self.btn_menu = tk.Button(self.frame, text="Retour au menu", command=self._return_to_menu)
         self.btn_menu.grid(row=1, column=2, sticky="e", padx=6, pady=6)
-        style_button(self.btn_menu)
+        style_button(self.btn_menu)  
         self.draw_board()
+     
 
         # If AI is to move first (human chose O), let IA play
         if self.ai_mode and self.turn == self.ai_side:
@@ -125,8 +123,8 @@ class TeekoGame:
 
                 piece = self.board[r][c]
                 if piece != EMPTY:
-                    color = "#000000" if piece == PLAYER1 else "#fffacd"  # black & cream pieces
-                    self.canvas.create_oval(x1 + 15, y1 + 15, x2 - 15, y2 - 15, fill=color, outline="#555555", width=2)
+                    color = "#000000" if piece==PLAYER1 else "#fffacd"  # black & cream pieces
+                    self.canvas.create_oval(x1+15, y1+15, x2-15, y2-15, fill=color, outline="#555555", width=2)
 
         # highlight selected piece
         if self.selected_piece:
@@ -135,10 +133,14 @@ class TeekoGame:
             y1 = r * CELL_SIZE
             x2 = x1 + CELL_SIZE
             y2 = y1 + CELL_SIZE
-            self.canvas.create_rectangle(x1 + 2, y1 + 2, x2 - 2, y2 - 2, outline="#00ff00", width=4)
+            self.canvas.create_rectangle(x1+2, y1+2, x2-2, y2-2, outline="#00ff00", width=4)    
 
-            # update labels
+        # update labels
         self._update_labels()
+
+    
+    
+
 
     # ---------------- Input Handling ----------------
     def on_click(self, event):
@@ -285,8 +287,7 @@ class TeekoGame:
             return
 
         # otherwise minimax
-        move, score = self.minimax(self.board, depth=self.minimax_depth_for_call(), alpha=-math.inf, beta=math.inf,
-                                   maximizing=True)
+        move, score = self.minimax(self.board, depth=self.minimax_depth_for_call(), alpha=-math.inf, beta=math.inf, maximizing=True)
         if self.show_eval:
             self._update_labels(eval_text=f"Eval IA: {score:.1f}")
         if move is not None:
@@ -469,7 +470,7 @@ class TeekoGame:
             max_eval = -math.inf
             for t in targets:
                 newb = self.simulate_move(board, t, player)
-                _, eval_score = self.minimax(newb, depth - 1, alpha, beta, False)
+                _, eval_score = self.minimax(newb, depth-1, alpha, beta, False)
                 if eval_score > max_eval:
                     max_eval = eval_score
                     best_move = t
@@ -481,7 +482,7 @@ class TeekoGame:
             min_eval = math.inf
             for t in targets:
                 newb = self.simulate_move(board, t, player)
-                _, eval_score = self.minimax(newb, depth - 1, alpha, beta, True)
+                _, eval_score = self.minimax(newb, depth-1, alpha, beta, True)
                 if eval_score < min_eval:
                     min_eval = eval_score
                     best_move = t
@@ -493,16 +494,16 @@ class TeekoGame:
     def move_order_heur(self, board, target, player):
         # prefer center and adjacency to allies
         r, c = target
-        center = (SIZE - 1) / 2
-        center_score = - (abs(r - center) + abs(c - center))
+        center = (SIZE-1)/2
+        center_score = - (abs(r-center) + abs(c-center))
         ally_neighbors = 0
-        for dr in (-1, 0, 1):
-            for dc in (-1, 0, 1):
-                if dr == 0 and dc == 0: continue
-                rr, cc = r + dr, c + dc
-                if 0 <= rr < SIZE and 0 <= cc < SIZE and board[rr][cc] == player:
+        for dr in (-1,0,1):
+            for dc in (-1,0,1):
+                if dr==0 and dc==0: continue
+                rr, cc = r+dr, c+dc
+                if 0<=rr<SIZE and 0<=cc<SIZE and board[rr][cc]==player:
                     ally_neighbors += 1
-        return center_score + ally_neighbors * 1.2
+        return center_score + ally_neighbors*1.2
 
     # ---------------- Evaluation ----------------
     def evaluate_board(self, board):
@@ -515,17 +516,17 @@ class TeekoGame:
             sequences = []
             # rows
             for r in range(SIZE):
-                for c in range(SIZE - 3):
-                    sequences.append([board[r][c + i] for i in range(4)])
+                for c in range(SIZE-3):
+                    sequences.append([board[r][c+i] for i in range(4)])
             # cols
             for c in range(SIZE):
-                for r in range(SIZE - 3):
-                    sequences.append([board[r + i][c] for i in range(4)])
+                for r in range(SIZE-3):
+                    sequences.append([board[r+i][c] for i in range(4)])
             # diag
-            for r in range(SIZE - 3):
-                for c in range(SIZE - 3):
-                    sequences.append([board[r + i][c + i] for i in range(4)])
-                    sequences.append([board[r + 3 - i][c + i] for i in range(4)])
+            for r in range(SIZE-3):
+                for c in range(SIZE-3):
+                    sequences.append([board[r+i][c+i] for i in range(4)])
+                    sequences.append([board[r+3-i][c+i] for i in range(4)])
             for seq in sequences:
                 cnt = seq.count(player)
                 empt = seq.count(EMPTY)
@@ -542,16 +543,15 @@ class TeekoGame:
         score = seq_score_for(self.ai_side) - seq_score_for(self.human_side)
 
         # center control small bonus
-        center = (SIZE - 1) / 2
+        center = (SIZE-1)/2
         for r in range(SIZE):
             for c in range(SIZE):
                 if board[r][c] == self.ai_side:
-                    score += max(0, 3 - (abs(r - center) + abs(c - center)))
+                    score += max(0, 3 - (abs(r-center) + abs(c-center)))
                 elif board[r][c] == self.human_side:
-                    score -= max(0, 3 - (abs(r - center) + abs(c - center)))
+                    score -= max(0, 3 - (abs(r-center) + abs(c-center)))
 
         return score
-
 
 # ------------------ Ai vs Ai game mode ------------------
 
@@ -586,9 +586,6 @@ class TeekoGameAIvsAI(TeekoGame):
         if not self.step_mode:
             self.root.after(300, self.ai_turn)
 
-        self.position_history = []  # Historique des positions
-        self.max_repetitions = 3  # limite de répétitions
-
     # Override to remove automatic turn advancement in parent
     def apply_target(self, target, player):
         """Apply a move without switching turns automatically."""
@@ -599,30 +596,18 @@ class TeekoGameAIvsAI(TeekoGame):
         else:
             tr, tc = target
             candidates = []
-            for dr in (-1, 0, 1):
-                for dc in (-1, 0, 1):
-                    if dr == 0 and dc == 0:
+            for dr in (-1,0,1):
+                for dc in (-1,0,1):
+                    if dr==0 and dc==0:
                         continue
-                    sr, sc = tr + dr, tc + dc
-                    if 0 <= sr < SIZE and 0 <= sc < SIZE and self.board[sr][sc] == player:
+                    sr, sc = tr+dr, tc+dc
+                    if 0<=sr<SIZE and 0<=sc<SIZE and self.board[sr][sc]==player:
                         candidates.append((sr, sc))
             if candidates:
                 # pick first reachable piece (simpler)
                 sr, sc = candidates[0]
                 self.board[sr][sc] = EMPTY
                 self.board[tr][tc] = player
-
-        board_state = str(self.board)
-        self.position_history.append(board_state)
-
-        # Si même position répétée 3 fois → match nul
-        if self.position_history.count(board_state) >= self.max_repetitions:
-            messagebox.showinfo("Match nul", "Répétition de coups détectée. Match nul!")
-            return True
-
-        # Limiter la taille de l'historique
-        if len(self.position_history) > 20:
-            self.position_history.pop(0)
 
         self.draw_board()
         # check for win
@@ -638,8 +623,8 @@ class TeekoGameAIvsAI(TeekoGame):
 
     def ai_turn(self):
         # Determine depth for this AI
-        depth = self.ai1_level if self.turn == PLAYER1 else self.ai2_level
-        maximizing = (self.turn == PLAYER1)
+        depth = self.ai1_level if self.turn==PLAYER1 else self.ai2_level
+        maximizing = (self.turn==PLAYER1)
         move, _ = self.minimax(self.board, depth, -math.inf, math.inf, maximizing=maximizing)
         if move:
             game_over = self.apply_target(move, self.turn)
@@ -647,7 +632,7 @@ class TeekoGameAIvsAI(TeekoGame):
                 return
 
         # Switch turn manually
-        self.turn = PLAYER1 if self.turn == PLAYER2 else PLAYER2
+        self.turn = PLAYER1 if self.turn==PLAYER2 else PLAYER2
 
         # Schedule next turn only in auto mode
         if not self.step_mode:
@@ -662,6 +647,8 @@ class TeekoGameAIvsAI(TeekoGame):
         return f"Tour: {self.turn}"
 
 
+
+
 # ------------------ Menu / Settings UI ------------------
 class TeekoMenu:
     def __init__(self):
@@ -669,11 +656,12 @@ class TeekoMenu:
         self.root.title("Menu Teeko")
         self.root.state('zoomed')
 
+
         self.ai_difficulty = "Moyen"
         self.human_color = PLAYER1  # default human = X
         self.show_eval = False
 
-        tk.Label(self.root, text="Bienvenue dans Teeko !", font=("Arial", 16, "bold"),
+        tk.Label(self.root, text="Bienvenue dans Teeko !", font=("Arial", 16, "bold"), 
                  fg="#333333", bg="#f0f0f0").pack(pady=10)
 
         btn_pvp = tk.Button(self.root, text=" Jouer à deux", command=self.start_pvp)
@@ -701,14 +689,15 @@ class TeekoMenu:
 
         self.root.mainloop()
 
+
     def start_pvp(self):
         self.root.destroy()
         w = tk.Tk()
         w.state('zoomed')
         TeekoGame(w, ai_mode=False, human_side=self.human_color,
-                  minimax_depth=DIFFICULTIES[self.ai_difficulty],
-                  show_eval=self.show_eval,
-                  return_to_menu_cb=self.show_menu)
+                 minimax_depth=DIFFICULTIES[self.ai_difficulty],
+                 show_eval=self.show_eval,
+                 return_to_menu_cb=self.show_menu)
         w.mainloop()
 
     def start_vs_ai(self):
@@ -718,9 +707,9 @@ class TeekoMenu:
         w = tk.Tk()
         w.state('zoomed')
         TeekoGame(w, ai_mode=True, human_side=self.human_color,
-                  minimax_depth=DIFFICULTIES[self.ai_difficulty],
-                  show_eval=self.show_eval,
-                  return_to_menu_cb=self.show_menu)
+                 minimax_depth=DIFFICULTIES[self.ai_difficulty],
+                 show_eval=self.show_eval,
+                 return_to_menu_cb=self.show_menu)
         w.mainloop()
 
     def start_ai_vs_ai(self):
@@ -735,38 +724,27 @@ class TeekoMenu:
         tk.Label(s, text="Paramètres AI vs AI", font=("Arial", 16, "bold"), fg="#333333", bg="#f0f0f0").pack(pady=15)
 
         # AI 1 level
-        tk.Label(s, text="Niveau AI 1:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w",
-                                                                                                      padx=20,
-                                                                                                      pady=(10, 0))
+        tk.Label(s, text="Niveau AI 1:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w", padx=20, pady=(10,0))
         ai1_var = tk.IntVar(value=3)
         for name, depth in DIFFICULTIES.items():
-            rb = tk.Radiobutton(s, text=name, variable=ai1_var, value=depth, font=("Arial", 11), bg="#f0f0f0",
-                                anchor="w")
+            rb = tk.Radiobutton(s, text=name, variable=ai1_var, value=depth, font=("Arial", 11), bg="#f0f0f0", anchor="w")
             rb.pack(anchor="w", padx=40)
 
         # AI 2 level
-        tk.Label(s, text="Niveau AI 2:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w",
-                                                                                                      padx=20,
-                                                                                                      pady=(10, 0))
+        tk.Label(s, text="Niveau AI 2:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w", padx=20, pady=(10,0))
         ai2_var = tk.IntVar(value=3)
         for name, depth in DIFFICULTIES.items():
-            rb = tk.Radiobutton(s, text=name, variable=ai2_var, value=depth, font=("Arial", 11), bg="#f0f0f0",
-                                anchor="w")
+            rb = tk.Radiobutton(s, text=name, variable=ai2_var, value=depth, font=("Arial", 11), bg="#f0f0f0", anchor="w")
             rb.pack(anchor="w", padx=40)
 
         # Play mode
-        tk.Label(s, text="Mode de jeu:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w",
-                                                                                                      padx=20,
-                                                                                                      pady=(10, 0))
+        tk.Label(s, text="Mode de jeu:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w", padx=20, pady=(10,0))
         mode_var = tk.StringVar(value="auto")
-        tk.Radiobutton(s, text="Automatique", variable=mode_var, value="auto", font=("Arial", 11), bg="#f0f0f0",
-                       anchor="w").pack(anchor="w", padx=40)
-        tk.Radiobutton(s, text="Step by Step", variable=mode_var, value="step", font=("Arial", 11), bg="#f0f0f0",
-                       anchor="w").pack(anchor="w", padx=40)
+        tk.Radiobutton(s, text="Automatique", variable=mode_var, value="auto", font=("Arial", 11), bg="#f0f0f0", anchor="w").pack(anchor="w", padx=40)
+        tk.Radiobutton(s, text="Step by Step", variable=mode_var, value="step", font=("Arial", 11), bg="#f0f0f0", anchor="w").pack(anchor="w", padx=40)
 
         # Start button
-        btn_start = tk.Button(s, text="Démarrer AI vs AI", font=("Arial", 12, "bold"),
-                              command=lambda: apply_and_start())
+        btn_start = tk.Button(s, text="Démarrer AI vs AI", font=("Arial", 12, "bold"), command=lambda: apply_and_start())
         btn_start.pack(pady=20)
         style_button(btn_start)
 
@@ -784,6 +762,7 @@ class TeekoMenu:
 
         s.grab_set()
         s.wait_window()
+
 
     def show_rules(self):
         """Display the rules of Teeko in a styled window."""
@@ -820,7 +799,7 @@ class TeekoMenu:
         text_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
         rules_label = tk.Label(text_frame, text=rules_text, font=("Arial", 12), justify="left",
-                               wraplength=550, fg="#333333", bg="#f0f0f0")
+                            wraplength=550, fg="#333333", bg="#f0f0f0")
         rules_label.pack(anchor="nw")
 
         # Close button
@@ -830,6 +809,7 @@ class TeekoMenu:
 
         w.grab_set()
         w.wait_window()
+    
 
     def show_menu(self):
         # relaunch menu
@@ -849,26 +829,21 @@ class TeekoMenu:
         content_frame.pack(fill="both", expand=True, padx=20)
 
         # Difficulty
-        tk.Label(content_frame, text="Difficulté IA:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(
-            anchor="w", pady=(0, 5))
+        tk.Label(content_frame, text="Difficulté IA:", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w", pady=(0,5))
         diff_var = tk.StringVar(value=self.ai_difficulty)
         for name in DIFFICULTIES.keys():
-            tk.Radiobutton(content_frame, text=name, variable=diff_var, value=name, font=("Arial", 11),
-                           bg="#f0f0f0").pack(anchor="w", padx=10, pady=2)
+            tk.Radiobutton(content_frame, text=name, variable=diff_var, value=name, font=("Arial", 11), bg="#f0f0f0").pack(anchor="w", padx=10, pady=2)
 
         # Color choice
-        tk.Label(content_frame, text="Couleur du joueur (X commence):", font=("Arial", 12, "bold"), fg="#333333",
-                 bg="#f0f0f0").pack(anchor="w", pady=(10, 5))
+        tk.Label(content_frame, text="Couleur du joueur (X commence):", font=("Arial", 12, "bold"), fg="#333333", bg="#f0f0f0").pack(anchor="w", pady=(10,5))
         color_var = tk.StringVar(value=self.human_color)
-        tk.Radiobutton(content_frame, text="Jouer X (commence)", variable=color_var, value=PLAYER1, font=("Arial", 11),
-                       bg="#f0f0f0").pack(anchor="w", padx=10, pady=2)
-        tk.Radiobutton(content_frame, text="Jouer O (IA commence)", variable=color_var, value=PLAYER2,
-                       font=("Arial", 11), bg="#f0f0f0").pack(anchor="w", padx=10, pady=2)
+        tk.Radiobutton(content_frame, text="Jouer X (commence)", variable=color_var, value=PLAYER1, font=("Arial", 11), bg="#f0f0f0").pack(anchor="w", padx=10, pady=2)
+        tk.Radiobutton(content_frame, text="Jouer O (IA commence)", variable=color_var, value=PLAYER2, font=("Arial", 11), bg="#f0f0f0").pack(anchor="w", padx=10, pady=2)
 
         # Show eval checkbox
         show_var = tk.BooleanVar(value=self.show_eval)
         tk.Checkbutton(content_frame, text="Afficher évaluation Minimax pendant la partie", variable=show_var,
-                       font=("Arial", 11), bg="#f0f0f0").pack(anchor="w", pady=(10, 5))
+                    font=("Arial", 11), bg="#f0f0f0").pack(anchor="w", pady=(10,5))
 
         # Apply button
         btn_apply = tk.Button(s, text="Appliquer", font=("Arial", 12, "bold"), command=lambda: apply_and_close())
