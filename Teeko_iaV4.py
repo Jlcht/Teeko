@@ -138,10 +138,6 @@ class TeekoGame:
         # update labels
         self._update_labels()
 
-    
-    
-
-
     # ---------------- Input Handling ----------------
     def on_click(self, event):
         # ignore clicks if it's AI's turn
@@ -234,8 +230,6 @@ class TeekoGame:
                 if all(board[r + i][c + j] == player for i in range(2) for j in range(2)):
                     return True
         return False
-    
-
 
     def check_win(self, player):
         return self.check_win_board(self.board, player)
@@ -261,7 +255,6 @@ class TeekoGame:
         
         return False
 
-
     # ---------------- End game ----------------
     def end_game(self, winner):
         messagebox.showinfo("Victoire", f"🎉 Le joueur {winner} a gagné !")
@@ -269,11 +262,10 @@ class TeekoGame:
         self.canvas.unbind("<Button-1>")
     
     def end_game_draw(self):
-        messagebox.showinfo("Egalité",f"Egalité après 15 coups ou position repétée 3 fois")
+        messagebox.showinfo("Egalité",f"Egalité après 15 coups ou position répétée 3 fois")
         # keep window open but unbind clicks
         self.canvas.unbind("<Button-1>")
     
-
     # ---------------- AI Entry ----------------
     def ai_play(self):
         # first: immediate win or block (placement or movement)
@@ -287,7 +279,7 @@ class TeekoGame:
             return
 
         # otherwise minimax
-        move, score = self.minimax(self.board, depth=self.minimax_depth_for_call(), alpha=-math.inf, beta=math.inf, maximizing=True)
+        move, score = self.minimax(self.board, depth=self.minimax_depth_for_call(), alpha=-math.inf, beta=math.inf, maximizing=True, perspective_player=self.ai_side)
         if self.show_eval:
             self._update_labels(eval_text=f"Eval IA: {score:.1f}")
         if move is not None:
@@ -378,26 +370,15 @@ class TeekoGame:
             return nb  # unreachable, but safe
 
         best_nb = None
-        if player == self.ai_side:
-            best_score = -math.inf
-            for (sr, sc) in candidates:
-                tmp = copy.deepcopy(board)
-                tmp[sr][sc] = EMPTY
-                tmp[tr][tc] = player
-                score = self.evaluate_board(tmp)
-                if score > best_score:
-                    best_score = score
-                    best_nb = tmp
-        else:
-            best_score = math.inf
-            for (sr, sc) in candidates:
-                tmp = copy.deepcopy(board)
-                tmp[sr][sc] = EMPTY
-                tmp[tr][tc] = player
-                score = self.evaluate_board(tmp)
-                if score < best_score:
-                    best_score = score
-                    best_nb = tmp
+        best_score = -math.inf
+        for (sr, sc) in candidates:
+            tmp = copy.deepcopy(board)
+            tmp[sr][sc] = EMPTY
+            tmp[tr][tc] = player
+            score = self.evaluate_board_for_player(tmp, player)
+            if score > best_score:
+                best_score = score
+                best_nb = tmp
         return best_nb if best_nb is not None else nb
 
     # ---------------- Apply target to real board ----------------
@@ -424,7 +405,7 @@ class TeekoGame:
                     tmp = copy.deepcopy(self.board)
                     tmp[sr][sc] = EMPTY
                     tmp[tr][tc] = player
-                    score = self.evaluate_board(tmp)
+                    score = self.evaluate_board_for_player(tmp, player)
                     if score > best_score:
                         best_score = score
                         best_src = (sr, sc)
@@ -451,16 +432,22 @@ class TeekoGame:
             self.root.after(200, self.ai_play)
 
     # ---------------- Minimax (alpha-beta) ----------------
-    def minimax(self, board, depth, alpha, beta, maximizing):
+    def minimax(self, board, depth, alpha, beta, maximizing, perspective_player=None):
+        # If perspective_player not provided, use ai_side (for backward compatibility)
+        if perspective_player is None:
+            perspective_player = self.ai_side
+        
+        opponent = PLAYER2 if perspective_player == PLAYER1 else PLAYER1
+        
         # terminal checks on this board
-        if self.check_win_board(board, self.ai_side):
+        if self.check_win_board(board, perspective_player):
             return None, 100000
-        if self.check_win_board(board, self.human_side):
+        if self.check_win_board(board, opponent):
             return None, -100000
         if depth == 0:
-            return None, self.evaluate_board(board)
+            return None, self.evaluate_board_for_player(board, perspective_player)
 
-        player = self.ai_side if maximizing else self.human_side
+        player = perspective_player if maximizing else opponent
         targets = self.get_all_targets(board, player)
         # order moves by heuristic
         targets.sort(key=lambda t: -self.move_order_heur(board, t, player))
@@ -470,7 +457,7 @@ class TeekoGame:
             max_eval = -math.inf
             for t in targets:
                 newb = self.simulate_move(board, t, player)
-                _, eval_score = self.minimax(newb, depth-1, alpha, beta, False)
+                _, eval_score = self.minimax(newb, depth-1, alpha, beta, False, perspective_player)
                 if eval_score > max_eval:
                     max_eval = eval_score
                     best_move = t
@@ -482,7 +469,7 @@ class TeekoGame:
             min_eval = math.inf
             for t in targets:
                 newb = self.simulate_move(board, t, player)
-                _, eval_score = self.minimax(newb, depth-1, alpha, beta, True)
+                _, eval_score = self.minimax(newb, depth-1, alpha, beta, True, perspective_player)
                 if eval_score < min_eval:
                     min_eval = eval_score
                     best_move = t
@@ -507,9 +494,18 @@ class TeekoGame:
 
     # ---------------- Evaluation ----------------
     def evaluate_board(self, board):
+        """Legacy method for backward compatibility - evaluates from ai_side perspective."""
+        return self.evaluate_board_for_player(board, self.ai_side)
+    
+    def evaluate_board_for_player(self, board, perspective_player):
+        """Evaluate board from the perspective of a specific player."""
+        opponent = PLAYER2 if perspective_player == PLAYER1 else PLAYER1
+        
         # check immediate wins/losses
-        if self.check_win_board(board, self.ai_side): return 100000
-        if self.check_win_board(board, self.human_side): return -100000
+        if self.check_win_board(board, perspective_player): 
+            return 100000
+        if self.check_win_board(board, opponent): 
+            return -100000
 
         def seq_score_for(player):
             score = 0
@@ -540,20 +536,18 @@ class TeekoGame:
                     score += 5
             return score
 
-        score = seq_score_for(self.ai_side) - seq_score_for(self.human_side)
+        score = seq_score_for(perspective_player) - seq_score_for(opponent)
 
         # center control small bonus
         center = (SIZE-1)/2
         for r in range(SIZE):
             for c in range(SIZE):
-                if board[r][c] == self.ai_side:
+                if board[r][c] == perspective_player:
                     score += max(0, 3 - (abs(r-center) + abs(c-center)))
-                elif board[r][c] == self.human_side:
+                elif board[r][c] == opponent:
                     score -= max(0, 3 - (abs(r-center) + abs(c-center)))
 
         return score
-
-# ------------------ Ai vs Ai game mode ------------------
 
 # ------------------ AI vs AI Class ------------------
 class TeekoGameAIvsAI(TeekoGame):
@@ -604,16 +598,27 @@ class TeekoGameAIvsAI(TeekoGame):
                     if 0<=sr<SIZE and 0<=sc<SIZE and self.board[sr][sc]==player:
                         candidates.append((sr, sc))
             if candidates:
-                # pick first reachable piece (simpler)
-                sr, sc = candidates[0]
-                self.board[sr][sc] = EMPTY
-                self.board[tr][tc] = player
+                # Choose best source using evaluation
+                best_src = None
+                best_score = -math.inf
+                for (sr, sc) in candidates:
+                    tmp = copy.deepcopy(self.board)
+                    tmp[sr][sc] = EMPTY
+                    tmp[tr][tc] = player
+                    score = self.evaluate_board_for_player(tmp, player)
+                    if score > best_score:
+                        best_score = score
+                        best_src = (sr, sc)
+                if best_src:
+                    sr, sc = best_src
+                    self.board[sr][sc] = EMPTY
+                    self.board[tr][tc] = player
 
         self.draw_board()
         # check for win
-        self.pos_nb+=0.5
+        self.pos_nb += 1
         if self.check_win(player):
-            messagebox.showinfo("Game Over", f"AI {player} wins!")
+            messagebox.showinfo("Game Over", f"AI {player} Gagne!")
             return True
         if self.check_draw(self.turn):
             self.draw_board()
@@ -622,14 +627,23 @@ class TeekoGameAIvsAI(TeekoGame):
         return False
 
     def ai_turn(self):
-        # Determine depth for this AI
-        depth = self.ai1_level if self.turn==PLAYER1 else self.ai2_level
-        maximizing = (self.turn==PLAYER1)
-        move, _ = self.minimax(self.board, depth, -math.inf, math.inf, maximizing=maximizing)
-        if move:
-            game_over = self.apply_target(move, self.turn)
+        current_ai = self.turn
+        depth = self.ai1_level if current_ai==PLAYER1 else self.ai2_level
+        
+        # First: check for immediate win or block
+        immediate = self.find_immediate_win_or_block_aivsai(current_ai)
+        if immediate is not None:
+            game_over = self.apply_target(immediate, current_ai)
             if game_over:
                 return
+        else:
+            # Use minimax
+            maximizing = True  # Always maximize for current player
+            move, _ = self.minimax(self.board, depth, -math.inf, math.inf, maximizing=maximizing, perspective_player=current_ai)
+            if move:
+                game_over = self.apply_target(move, current_ai)
+                if game_over:
+                    return
 
         # Switch turn manually
         self.turn = PLAYER1 if self.turn==PLAYER2 else PLAYER2
@@ -637,6 +651,27 @@ class TeekoGameAIvsAI(TeekoGame):
         # Schedule next turn only in auto mode
         if not self.step_mode:
             self.root.after(1000, self.ai_turn)
+    
+    def find_immediate_win_or_block_aivsai(self, current_ai):
+        """Find immediate win or block for AI vs AI mode."""
+        opponent = PLAYER2 if current_ai==PLAYER1 else PLAYER1
+        
+        # Check if current AI can win immediately
+        ai_targets = self.get_all_targets(self.board, current_ai)
+        for t in ai_targets:
+            newb = self.simulate_move(self.board, t, current_ai)
+            if self.check_win_board(newb, current_ai):
+                return t
+        
+        # Check if opponent threatens to win -> block
+        opp_targets = self.get_all_targets(self.board, opponent)
+        for t in opp_targets:
+            newb = self.simulate_move(self.board, t, opponent)
+            if self.check_win_board(newb, opponent):
+                if t in ai_targets:
+                    return t
+        
+        return None
 
     def next_turn(self):
         """Manual step mode: execute a single AI move."""
@@ -647,15 +682,12 @@ class TeekoGameAIvsAI(TeekoGame):
         return f"Tour: {self.turn}"
 
 
-
-
 # ------------------ Menu / Settings UI ------------------
 class TeekoMenu:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Menu Teeko")
         self.root.state('zoomed')
-
 
         self.ai_difficulty = "Moyen"
         self.human_color = PLAYER1  # default human = X
@@ -664,11 +696,11 @@ class TeekoMenu:
         tk.Label(self.root, text="Bienvenue dans Teeko !", font=("Arial", 16, "bold"), 
                  fg="#333333", bg="#f0f0f0").pack(pady=10)
 
-        btn_pvp = tk.Button(self.root, text=" Jouer à deux", command=self.start_pvp)
+        btn_pvp = tk.Button(self.root, text="🎮 Jouer à deux", command=self.start_pvp)
         btn_pvp.pack(pady=6)
         style_button(btn_pvp)
 
-        btn_vs_ai = tk.Button(self.root, text=" Jouer contre l'IA", command=self.start_vs_ai)
+        btn_vs_ai = tk.Button(self.root, text="🤖 Jouer contre l'IA", command=self.start_vs_ai)
         btn_vs_ai.pack(pady=6)
         style_button(btn_vs_ai)
 
@@ -676,7 +708,7 @@ class TeekoMenu:
         btn_ai_vs_ai.pack(pady=6)
         style_button(btn_ai_vs_ai)
 
-        btn_rules = tk.Button(self.root, text="Règles du jeu", command=self.show_rules)
+        btn_rules = tk.Button(self.root, text="📜 Règles du jeu", command=self.show_rules)
         btn_rules.pack(pady=6)
         style_button(btn_rules)
 
@@ -688,7 +720,6 @@ class TeekoMenu:
         self.root.configure(bg="#f0f0f0")
 
         self.root.mainloop()
-
 
     def start_pvp(self):
         self.root.destroy()
@@ -763,7 +794,6 @@ class TeekoMenu:
         s.grab_set()
         s.wait_window()
 
-
     def show_rules(self):
         """Display the rules of Teeko in a styled window."""
         rules_text = (
@@ -771,14 +801,14 @@ class TeekoMenu:
             "• Le jeu se joue sur une grille 5×5.\n"
             "• Chaque joueur possède 4 pièces (X et O).\n"
             "• X commence toujours.\n\n"
-            "Phase 1 — Placement :\n"
+            "Phase 1 – Placement :\n"
             "Les joueurs placent leurs pièces à tour de rôle sur une case vide.\n"
             "Après 8 tours, chaque joueur aura placé ses 4 pièces.\n\n"
-            "Phase 2 — Mouvement :\n"
-            "À partir de ce moment, les joueurs déplacent l’une de leurs pièces\n"
+            "Phase 2 – Mouvement :\n"
+            "À partir de ce moment, les joueurs déplacent l'une de leurs pièces\n"
             "vers une case vide adjacente (horizontalement, verticalement ou en diagonale).\n\n"
             "Objectif :\n"
-            "Former l’un des motifs suivants :\n"
+            "Former l'un des motifs suivants :\n"
             "• 4 pièces alignées (ligne, colonne ou diagonale)\n"
             "• ou un carré 2×2.\n\n"
             "Le premier joueur à réussir cela gagne la partie !"
@@ -788,7 +818,7 @@ class TeekoMenu:
         w = tk.Toplevel(self.root)
         w.title("Règles du jeu")
         w.geometry("600x500")
-        w.configure(bg="#f0f0f0")  # Chess.com style background
+        w.configure(bg="#f0f0f0") 
         w.transient(self.root)
 
         # Title
@@ -810,7 +840,6 @@ class TeekoMenu:
         w.grab_set()
         w.wait_window()
     
-
     def show_menu(self):
         # relaunch menu
         self.__init__()
