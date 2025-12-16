@@ -6,9 +6,9 @@ import math
 import copy
 
 def style_button(btn):
-    btn.configure(bg="#00a651", fg="#ffffff", font=("Arial", 12, "bold"), bd=0, relief="flat", padx=10, pady=5)
+    btn.configure(bg="#017cbf", fg="#ffffff", font=("Arial", 12, "bold"), bd=0, relief="flat", padx=10, pady=5)
     btn.bind("<Enter>", lambda e: btn.configure(bg="#009344"))
-    btn.bind("<Leave>", lambda e: btn.configure(bg="#00a651"))
+    btn.bind("<Leave>", lambda e: btn.configure(bg="#017cbf"))
 
 
 # ---------------- Constants ----------------

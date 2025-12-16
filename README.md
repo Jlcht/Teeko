@@ -1,245 +1,245 @@
-# Teeko 🎮
+    # Teeko 🎮
 
 ## Description
 
-Implémentation du jeu de stratégie **Teeko** avec interface graphique en Python utilisant Tkinter. Ce projet propose une intelligence artificielle avancée basée sur l'algorithme **Minimax avec élagage Alpha-Beta**.
+Implementation of the **Teeko** strategy game with a graphical interface in Python using Tkinter. This project features an advanced artificial intelligence based on the **Minimax algorithm with Alpha-Beta pruning**.
 
-## 📋 Règles du jeu
+## 📋 Game Rules
 
-### Plateau de jeu
+### Game Board
 
-- Grille de **5×5** cases
-- Chaque joueur possède **4 pièces** (X et O)
-- **X commence toujours** en premier
+- **5×5** grid
+- Each player has **4 pieces** (X and O)
+- **X always starts** first
 
-### Déroulement de la partie
+### Game Flow
 
 #### Phase 1 – Placement
 
-- Les joueurs placent leurs pièces à tour de rôle sur une case vide
-- Après 8 tours, chaque joueur aura placé ses 4 pièces
+- Players place their pieces alternately on an empty cell
+- After 8 turns, each player will have placed their 4 pieces
 
-#### Phase 2 – Mouvement
+#### Phase 2 – Movement
 
-- Les joueurs déplacent l'une de leurs pièces vers une case vide adjacente
-- Les déplacements sont autorisés horizontalement, verticalement ou en diagonale
+- Players move one of their pieces to an adjacent empty cell
+- Movements are allowed horizontally, vertically, or diagonally
 
-### Conditions de victoire
+### Victory Conditions
 
-Le premier joueur à réaliser l'un des motifs suivants gagne :
+The first player to achieve one of the following patterns wins:
 
-- **4 pièces alignées** (ligne, colonne ou diagonale)
-- **Carré 2×2** avec ses 4 pièces
+- **4 pieces aligned** (row, column, or diagonal)
+- **2×2 square** with their 4 pieces
 
-### Conditions de match nul
+### Draw Conditions
 
-- Après **30 coups** (15 coups par joueur) en phase de mouvement
-- Si une **position identique se répète 3 fois**
+- After **30 moves** (15 moves per player) in the movement phase
+- If an **identical position repeats 3 times**
 
-## 🎯 Fonctionnalités principales
+## 🎯 Main Features
 
-### 1. **Modes de jeu multiples**
+### 1. **Multiple Game Modes**
 
-- **🎮 Joueur vs Joueur (PvP)** : Deux joueurs humains s'affrontent
-- **🤖 Joueur vs IA** : Affrontez l'intelligence artificielle
-- **🤖 IA vs IA** : Observez deux IA s'affronter
+- **🎮 Player vs Player (PvP)**: Two human players compete
+- **🤖 Player vs AI**: Challenge the artificial intelligence
+- **🤖 AI vs AI**: Watch two AIs compete
 
-### 2. **Intelligence Artificielle avancée**
+### 2. **Advanced Artificial Intelligence**
 
-#### Algorithme Minimax avec élagage Alpha-Beta
+#### Minimax Algorithm with Alpha-Beta Pruning
 
-- **Profondeur de recherche configurable** (1 à 5 niveaux)
-- **Évaluation heuristique sophistiquée** :
-  - Détection des séquences de 2, 3 et 4 pièces alignées
-  - Bonus pour le contrôle du centre du plateau
-  - Évaluation des menaces et opportunités
-- **Optimisations** :
-  - Détection immédiate des coups gagnants
-  - Blocage prioritaire des menaces adverses
-  - Tri des coups par heuristique pour améliorer l'élagage
+- **Configurable search depth** (1 to 5 levels)
+- **Sophisticated heuristic evaluation**:
+  - Detection of sequences of 2, 3, and 4 aligned pieces
+  - Bonus for center control
+  - Evaluation of threats and opportunities
+- **Optimizations**:
+  - Immediate detection of winning moves
+  - Priority blocking of opponent threats
+  - Move ordering by heuristic to improve pruning
 
-#### Niveaux de difficulté
+#### Difficulty Levels
 
-- **Facile** : Profondeur 1 (réactions rapides, peu de prévoyance)
-- **Moyen** : Profondeur 3 (bon équilibre)
-- **Difficile** : Profondeur 5 (analyse approfondie, très compétitif)
+- **Easy**: Depth 1 (fast reactions, little foresight)
+- **Medium**: Depth 3 (good balance)
+- **Hard**: Depth 5 (deep analysis, very competitive)
 
-### 3. **Interface graphique intuitive**
+### 3. **Intuitive Graphical Interface**
 
-- **Design inspiré de Chess.com** avec palette de couleurs professionnelle
-- **Grille 5×5** avec cases de 90×90 pixels
-- **Pièces visuelles** : cercles noirs (X) et crème (O)
-- **Mise en évidence** :
-  - Sélection de pièce avec bordure verte
-  - Grille avec lignes subtiles
-- **Informations en temps réel** :
-  - Tour actuel
-  - Couleur du joueur humain et de l'IA
-  - Évaluation Minimax (optionnelle)
+- **Chess.com-inspired design** with professional color palette
+- **5×5 grid** with 90×90 pixel cells
+- **Visual pieces**: black (X) and cream (O) circles
+- **Highlighting**:
+  - Selected piece with green border
+  - Grid with subtle lines
+- **Real-time information**:
+  - Current turn
+  - Human player and AI colors
+  - Minimax evaluation (optional)
 
-### 4. **Mode IA vs IA**
+### 4. **AI vs AI Mode**
 
-- **Configuration des deux IA** :
-  - Niveau indépendant pour chaque IA (Facile, Moyen, Difficile)
-  - Affichage des niveaux et couleurs de chaque IA
-- **Modes de visualisation** :
-  - **Automatique** : Les IA jouent en continu avec délai de 1 seconde
-  - **Step by Step** : Avancez coup par coup avec un bouton "Next Turn"
+- **Configuration of both AIs**:
+  - Independent level for each AI (Easy, Medium, Hard)
+  - Display of levels and colors for each AI
+- **Visualization modes**:
+  - **Automatic**: AIs play continuously with 1-second delay
+  - **Step by Step**: Advance move by move with a "Next Turn" button
 
-### 5. **Paramètres personnalisables**
+### 5. **Customizable Settings**
 
-- **Choix de la couleur** : Jouez X (commencez en premier) ou O (l'IA commence)
-- **Difficulté de l'IA** : Facile, Moyen ou Difficile
-- **Affichage de l'évaluation** : Visualisez le score Minimax calculé par l'IA
+- **Color choice**: Play X (start first) or O (AI starts)
+- **AI difficulty**: Easy, Medium, or Hard
+- **Evaluation display**: Visualize the Minimax score calculated by the AI
 
-### 6. **Système de détection de match nul**
+### 6. **Draw Detection System**
 
-- **Compteur de coups** : Limite de 30 coups en phase de mouvement
-- **Détection de répétition** : Identifie les positions répétées 3 fois
-- **Historique optimisé** : Conservation des 10 dernières positions pour économiser la mémoire
+- **Move counter**: Limit of 30 moves in the movement phase
+- **Repetition detection**: Identifies positions repeated 3 times
+- **Optimized history**: Keeps the last 10 positions to save memory
 
-### 7. **Navigation et ergonomie**
+### 7. **Navigation and Ergonomics**
 
-- **Menu principal** avec accès à tous les modes
-- **Bouton "Retour au menu"** disponible pendant les parties
-- **Fenêtre plein écran** pour une meilleure expérience
-- **Affichage des règles** : Fenêtre dédiée avec toutes les règles du jeu
+- **Main menu** with access to all modes
+- **"Return to menu" button** available during games
+- **Fullscreen window** for better experience
+- **Rules display**: Dedicated window with all game rules
 
-## 🚀 Installation et lancement
+## 🚀 Installation and Launch
 
-### Prérequis
+### Prerequisites
 
 - Python 3.x
-- Tkinter (généralement inclus avec Python)
+- Tkinter (usually included with Python)
 
-### Lancement du jeu
+### Launching the Game
 
 ```bash
 python Teeko_iaV4.py
 ```
 
-## 🏗️ Architecture du code
+## 🏗️ Code Architecture
 
-### Classes principales
+### Main Classes
 
 #### `TeekoGame`
 
-Classe principale du jeu gérant :
+Main game class managing:
 
-- Le plateau de jeu et la logique
-- L'interface graphique
-- Les interactions utilisateur
-- L'IA avec Minimax
-- La détection de victoire et de match nul
+- Game board and logic
+- Graphical interface
+- User interactions
+- AI with Minimax
+- Victory and draw detection
 
 #### `TeekoGameAIvsAI`
 
-Classe héritant de `TeekoGame` pour le mode IA vs IA :
+Class inheriting from `TeekoGame` for AI vs AI mode:
 
-- Gestion de deux IA avec niveaux différents
-- Mode automatique ou pas à pas
-- Affichage des informations des deux IA
+- Management of two AIs with different levels
+- Automatic or step-by-step mode
+- Display of information for both AIs
 
 #### `TeekoMenu`
 
-Classe gérant le menu principal :
+Class managing the main menu:
 
-- Sélection des modes de jeu
-- Configuration des paramètres
-- Affichage des règles
-- Navigation entre les écrans
+- Game mode selection
+- Settings configuration
+- Rules display
+- Navigation between screens
 
-### Méthodes clés
+### Key Methods
 
-#### Algorithme Minimax
+#### Minimax Algorithm
 
 ```python
 minimax(board, depth, alpha, beta, maximizing, perspective_player)
 ```
 
-- Recherche récursive avec élagage Alpha-Beta
-- Évaluation depuis la perspective d'un joueur spécifique
-- Retourne le meilleur coup et son score
+- Recursive search with Alpha-Beta pruning
+- Evaluation from a specific player's perspective
+- Returns the best move and its score
 
-#### Évaluation du plateau
+#### Board Evaluation
 
 ```python
 evaluate_board_for_player(board, perspective_player)
 ```
 
-- Analyse des séquences de 2, 3 et 4 pièces
-- Bonus pour le contrôle du centre
-- Score différentiel entre le joueur et l'adversaire
+- Analysis of sequences of 2, 3, and 4 pieces
+- Bonus for center control
+- Differential score between player and opponent
 
-#### Détection de victoire
+#### Victory Detection
 
 ```python
 check_win_board(board, player)
 ```
 
-- Vérifie les 4 alignements (lignes, colonnes, diagonales)
-- Vérifie les carrés 2×2
+- Checks the 4 alignments (rows, columns, diagonals)
+- Checks 2×2 squares
 
-## 🎨 Design et style
+## 🎨 Design and Style
 
-### Palette de couleurs
+### Color Palette
 
-- **Fond du plateau** : `#f0d9b5` (beige clair)
-- **Grille** : `#b58863` (marron)
-- **Pièces X** : `#000000` (noir)
-- **Pièces O** : `#fffacd` (crème)
-- **Sélection** : `#00ff00` (vert)
-- **Boutons** : `#00a651` (vert UTBM)
-- **Interface** : `#f0f0f0` (gris clair)
+- **Board background**: `#f0d9b5` (light beige)
+- **Grid**: `#b58863` (brown)
+- **X pieces**: `#000000` (black)
+- **O pieces**: `#fffacd` (cream)
+- **Selection**: `#00ff00` (green)
+- **Buttons**: `#017cbf` (UTBM blue)
+- **Interface**: `#f0f0f0` (light gray)
 
-### Effets visuels
+### Visual Effects
 
-- **Hover sur boutons** : Changement de couleur au survol
-- **Mise en évidence** : Bordure verte pour la pièce sélectionnée
-- **Fenêtres modales** : Pour les paramètres et règles
+- **Button hover**: Color change on hover
+- **Highlighting**: Green border for selected piece
+- **Modal windows**: For settings and rules
 
-## 📊 Performances de l'IA
+## 📊 AI Performance
 
-### Complexité
+### Complexity
 
-- **Phase de placement** : ~25 positions possibles par coup
-- **Phase de mouvement** : ~12-16 positions possibles par coup
-- **Profondeur 5** : Peut analyser plusieurs milliers de positions
+- **Placement phase**: ~25 possible positions per move
+- **Movement phase**: ~12-16 possible positions per move
+- **Depth 5**: Can analyze several thousand positions
 
-### Optimisations implémentées
+### Implemented Optimizations
 
-1. **Élagage Alpha-Beta** : Réduit drastiquement l'arbre de recherche
-2. **Tri des coups** : Heuristique de tri pour améliorer l'élagage
-3. **Détection immédiate** : Court-circuite Minimax pour les coups évidents
-4. **Choix intelligent de la source** : En phase de mouvement, sélectionne la meilleure pièce à déplacer
+1. **Alpha-Beta Pruning**: Drastically reduces the search tree
+2. **Move ordering**: Heuristic sorting to improve pruning
+3. **Immediate detection**: Short-circuits Minimax for obvious moves
+4. **Intelligent source selection**: In movement phase, selects the best piece to move
 
-## 🔧 Personnalisation
+## 🔧 Customization
 
-### Modifier la difficulté
+### Modify Difficulty
 
-Dans le dictionnaire `DIFFICULTIES` :
+In the `DIFFICULTIES` dictionary:
 
 ```python
 DIFFICULTIES = {
-    "Facile": 1,
-    "Moyen": 3,
-    "Difficile": 5
+    "Easy": 1,
+    "Medium": 3,
+    "Hard": 5
 }
 ```
 
-### Ajuster la taille du plateau
+### Adjust Board Size
 
-Modifier la constante `SIZE` (actuellement 5)
+Modify the `SIZE` constant (currently 5)
 
-### Changer les délais de l'IA
+### Change AI Delays
 
-- Mode normal : `self.root.after(200, self.ai_play)`
-- Mode IA vs IA : `self.root.after(1000, self.ai_turn)`
+- Normal mode: `self.root.after(200, self.ai_play)`
+- AI vs AI mode: `self.root.after(1000, self.ai_turn)`
 
-## 📝 Auteur
+## 📝 Author
 
-Projet réalisé dans le cadre du cours **IA41** à l'**UTBM** (Université de Technologie de Belfort-Montbéliard)
+Project completed as part of the **IA41** course at **UTBM** (University of Technology of Belfort-Montbéliard)
 
-## 📄 Licence
+## 📄 License
 
-Projet académique - UTBM 2025
+Academic project - UTBM 2025
