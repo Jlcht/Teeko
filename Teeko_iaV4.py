@@ -11,22 +11,22 @@ def style_button(btn):
     btn.bind("<Leave>", lambda e: btn.configure(bg="#017cbf"))
 
 
-# ---------------- Constants ----------------
+# ---------------- Constantes ----------------
 SIZE = 5
 CELL_SIZE = 90
-PLAYER1 = "X"   # X goes first by rule
+PLAYER1 = "X"   # X commence tjrs
 PLAYER2 = "O"
 EMPTY = "."
 COLORS = {PLAYER1: "black", PLAYER2: "beige", EMPTY: "grey"}
 
-# Difficulty presets
+# Niveaux de difficulté
 DIFFICULTIES = {
     "Facile": 1,
     "Moyen": 3,
     "Difficile": 5
 }
 
-# ------------------ Main Game Class ------------------
+# ------------------ Classe principale du jeu ------------------
 class TeekoGame:
     def __init__(self, root, *,
                  ai_mode=False,
@@ -50,14 +50,14 @@ class TeekoGame:
             self.pos = pos
 
         self.board = [[EMPTY for _ in range(SIZE)] for _ in range(SIZE)]
-        self.turn = PLAYER1  # X always starts
+        self.turn = PLAYER1  # X commence tjrs
         self.total_pieces = 0
         self.selected_piece = None
 
-        # last eval text to keep it visible after draw_board
+        # dernier txt d'eval pr le garder visible après draw_board
         self.last_eval_text = ""
 
-        # UI
+        # Interface
         self.root.title("Teeko")
         self.frame = tk.Frame(self.root)
         self.frame.pack()
@@ -77,7 +77,7 @@ class TeekoGame:
         self.draw_board()
      
 
-        # If AI is to move first (human chose O), let IA play
+        # Si l'IA doit jouer en 1er (humain a choisi O), lancer IA
         if self.ai_mode and self.turn == self.ai_side:
             self.root.after(300, self.ai_play)
 
@@ -85,29 +85,29 @@ class TeekoGame:
         return f"Tour: {self.turn}    Joueur humain: {self.human_side}    IA: {self.ai_side}"
 
     def _update_labels(self, eval_text=None):
-        # if eval_text provided, update stored text only if show_eval enabled
+        # si eval_text fourni, màj txt stocké seulement si show_eval activé
         if eval_text is not None:
             if self.show_eval:
                 self.last_eval_text = eval_text
             else:
                 self.last_eval_text = ""
-        # update info label
+        # màj label info
         self.label_info.config(text=self._info_text())
-        # update eval label based on show_eval and stored text
+        # màj label eval selon show_eval et txt stocké
         if self.show_eval and self.last_eval_text:
             self.label_eval.config(text=self.last_eval_text)
         else:
             self.label_eval.config(text="")
 
     def _return_to_menu(self):
-        # destroy window and call callback
+        # détruire fenêtre et appeler callback
         if self.return_to_menu_cb:
             self.root.destroy()
             self.return_to_menu_cb()
         else:
             self.root.destroy()
 
-    # ---------------- Drawing ----------------
+    # ---------------- Dessin ----------------
     def draw_board(self):
         self.canvas.delete("all")
         self.canvas.configure(bg="#f0d9b5")
@@ -118,15 +118,15 @@ class TeekoGame:
                 y1 = r * CELL_SIZE
                 x2 = x1 + CELL_SIZE
                 y2 = y1 + CELL_SIZE
-                # draw subtle grid lines
+                # dessiner grille subtile
                 self.canvas.create_rectangle(x1, y1, x2, y2, outline="#b58863", width=2)
 
                 piece = self.board[r][c]
                 if piece != EMPTY:
-                    color = "#000000" if piece==PLAYER1 else "#fffacd"  # black & cream pieces
+                    color = "#000000" if piece==PLAYER1 else "#fffacd"  # pions noir & crème
                     self.canvas.create_oval(x1+15, y1+15, x2-15, y2-15, fill=color, outline="#555555", width=2)
 
-        # highlight selected piece
+        # surligner pion sélectionné
         if self.selected_piece:
             r, c = self.selected_piece
             x1 = c * CELL_SIZE
@@ -135,12 +135,12 @@ class TeekoGame:
             y2 = y1 + CELL_SIZE
             self.canvas.create_rectangle(x1+2, y1+2, x2-2, y2-2, outline="#00ff00", width=4)    
 
-        # update labels
+        # màj labels
         self._update_labels()
 
-    # ---------------- Input Handling ----------------
+    # ---------------- Gestion des clics ----------------
     def on_click(self, event):
-        # ignore clicks if it's AI's turn
+        # ignorer clics si c'est le tour de l'IA
         if self.ai_mode and self.turn == self.ai_side:
             return
 
@@ -161,7 +161,7 @@ class TeekoGame:
                 self._advance_turn()
             return
 
-        # Phase movement
+        # Phase mouvement
         if self.selected_piece is None:
             if self.board[r][c] == self.turn:
                 self.selected_piece = (r, c)
@@ -176,7 +176,7 @@ class TeekoGame:
                 return
             if not self.adjacent(r1, c1, r, c):
                 return
-            # move
+            # déplacer
             self.board[r1][c1] = EMPTY
             self.board[r][c] = self.turn
             self.selected_piece = None
@@ -192,23 +192,23 @@ class TeekoGame:
             self._advance_turn()
 
     def _advance_turn(self):
-        # alternate
+        # alterner
         self.turn = PLAYER1 if self.turn == PLAYER2 else PLAYER2
         self.draw_board()
-        # if ai mode and ai's turn -> schedule ai play
+        # si mode IA et tour de l'IA -> planifier jeu IA
         if self.ai_mode and self.turn == self.ai_side:
             self.root.after(200, self.ai_play)
 
-    # ---------------- Utilities ----------------
+    # ---------------- Utilitaires ----------------
     def adjacent(self, r1, c1, r2, c2):
         return abs(r1 - r2) <= 1 and abs(c1 - c2) <= 1 and not (r1 == r2 and c1 == c2)
 
     def count_pieces_board(self, board, player):
         return sum(row.count(player) for row in board)
 
-    # ---------------- Winning check ----------------
+    # ---------------- Vérif victoire ----------------
     def check_win_board(self, board, player):
-        # rows and columns
+        # lignes et colonnes
         for r in range(SIZE):
             for c in range(SIZE - 3):
                 if all(board[r][c + i] == player for i in range(4)):
@@ -217,14 +217,14 @@ class TeekoGame:
             for c in range(SIZE):
                 if all(board[r + i][c] == player for i in range(4)):
                     return True
-        # diagonals
+        # diagonales
         for r in range(SIZE - 3):
             for c in range(SIZE - 3):
                 if all(board[r + i][c + i] == player for i in range(4)):
                     return True
                 if all(board[r + 3 - i][c + i] == player for i in range(4)):
                     return True
-        # 2x2 square
+        # carré 2x2
         for r in range(SIZE - 1):
             for c in range(SIZE - 1):
                 if all(board[r + i][c + j] == player for i in range(2) for j in range(2)):
@@ -239,10 +239,10 @@ class TeekoGame:
         if self.pos_nb == 30:
             return True
         
-        # Signature immuable du plateau
+        # Signature du plateau
         current_signature = tuple(tuple(row) for row in self.board)
         
-        # Ajoute signature actuelle
+        # Ajout signature actuelle
         self.pos.append(current_signature)
         
         count = self.pos.count(current_signature)
@@ -255,37 +255,37 @@ class TeekoGame:
         
         return False
 
-    # ---------------- End game ----------------
+    # ---------------- Fin de partie ----------------
     def end_game(self, winner):
         messagebox.showinfo("Victoire", f"🎉 Le joueur {winner} a gagné !")
-        # keep window open but unbind clicks
+        # garder fenêtre ouverte mais unbind clics
         self.canvas.unbind("<Button-1>")
     
     def end_game_draw(self):
         messagebox.showinfo("Egalité",f"Egalité après 15 coups ou position répétée 3 fois")
-        # keep window open but unbind clicks
+        # garder fenêtre ouverte mais unbind clics
         self.canvas.unbind("<Button-1>")
     
-    # ---------------- AI Entry ----------------
+    # ---------------- Entrée IA ----------------
     def ai_play(self):
-        # first: immediate win or block (placement or movement)
+        # d'abord: victoire ou blocage imm (placement ou mvt)
         immediate = self.find_immediate_win_or_block()
         if immediate is not None:
-            # apply immediate target
+            # appliquer cible imm
             self.apply_target(immediate, self.ai_side)
-            # show eval if enabled
+            # afficher eval si activé
             if self.show_eval:
                 self._update_labels(eval_text=f"Eval IA: immediate")
             return
 
-        # otherwise minimax
+        # sinon minimax
         move, score = self.minimax(self.board, depth=self.minimax_depth_for_call(), alpha=-math.inf, beta=math.inf, maximizing=True, perspective_player=self.ai_side)
         if self.show_eval:
             self._update_labels(eval_text=f"Eval IA: {score:.1f}")
         if move is not None:
             self.apply_target(move, self.ai_side)
         else:
-            # fallback random legal target
+            # fallback cible légale aléatoire
             targets = self.get_all_targets(self.board, self.ai_side)
             if targets:
                 self.apply_target(random.choice(targets), self.ai_side)
@@ -293,31 +293,31 @@ class TeekoGame:
     def minimax_depth_for_call(self):
         return self.minimax_depth
 
-    # ---------------- Immediate win/block ----------------
+    # ---------------- Victoire/blocage imm ----------------
     def find_immediate_win_or_block(self):
-        # all targets IA can reach
+        # ttes les cibles que l'IA peut atteindre
         ai_targets = self.get_all_targets(self.board, self.ai_side)
-        # check IA winning target
+        # vérif cible gagnante IA
         for t in ai_targets:
             newb = self.simulate_move(self.board, t, self.ai_side)
             if self.check_win_board(newb, self.ai_side):
                 return t
-        # check opponent immediate threats -> block them
+        # vérif menaces imm adversaire -> les bloquer
         opp_targets = self.get_all_targets(self.board, self.human_side)
         for t in opp_targets:
             newb = self.simulate_move(self.board, t, self.human_side)
             if self.check_win_board(newb, self.human_side):
                 if t in ai_targets:
                     return t
-                # otherwise let minimax handle
+                # sinon laisser minimax gérer
         return None
 
-    # ---------------- Generate targets ----------------
+    # ---------------- Générer cibles ----------------
     def get_all_targets(self, board, player):
-        """Return list of empty cells that player could target:
-           - placement phase: all empties
-           - movement phase: empties adjacent to at least one player's piece
-           Representation: target is (r, c) cell to occupy (not source)."""
+        """Retourne liste cases vides que le joueur peut cibler:
+           - phase placement: ttes les vides
+           - phase mvt: vides adjacentes à au moins un pion du joueur
+           Représentation: cible est case (r, c) à occuper (pas source)."""
         targets = []
         if self.count_pieces_board(board, PLAYER1) < 4 or self.count_pieces_board(board, PLAYER2) < 4:
             # placement
@@ -326,7 +326,7 @@ class TeekoGame:
                     if board[r][c] == EMPTY:
                         targets.append((r, c))
         else:
-            # movement: empty cells adjacent to at least one of player's pieces
+            # mvt: cases vides adjacentes à au moins un pion du joueur
             for r in range(SIZE):
                 for c in range(SIZE):
                     if board[r][c] != EMPTY:
@@ -346,11 +346,11 @@ class TeekoGame:
                         targets.append((r, c))
         return targets
 
-    # ---------------- Simulate target (choose best source in movement) ----------------
+    # ---------------- Simuler cible  ----------------
     def simulate_move(self, board, target, player):
-        """Return new board after player occupies 'target'.
-           If in placement phase: just place.
-           If movement: choose best source (adjacent) for this simulation (try all candidates and keep best)."""
+        """Retourne nveau board après que joueur occupe 'target'.
+           Si phase placement: juste placer.
+           Si mvt: choisir meilleure source (adjacente) pr cette simu (essayer ts candidats et garder meilleur)."""
         nb = copy.deepcopy(board)
         if self.count_pieces_board(board, PLAYER1) < 4 or self.count_pieces_board(board, PLAYER2) < 4:
             r, c = target
@@ -367,7 +367,7 @@ class TeekoGame:
                 if 0 <= sr < SIZE and 0 <= sc < SIZE and board[sr][sc] == player:
                     candidates.append((sr, sc))
         if not candidates:
-            return nb  # unreachable, but safe
+            return nb
 
         best_nb = None
         best_score = -math.inf
@@ -381,7 +381,7 @@ class TeekoGame:
                 best_nb = tmp
         return best_nb if best_nb is not None else nb
 
-    # ---------------- Apply target to real board ----------------
+    # ---------------- Appliquer cible au vrai board ----------------
     def apply_target(self, target, player):
         if self.total_pieces < 8:
             r, c = target
@@ -389,7 +389,7 @@ class TeekoGame:
             self.total_pieces += 1
         else:
             tr, tc = target
-            # choose best source to move from (prefer highest evaluation after move)
+            # choisir meilleure source pr déplacer (préférer eval la + haute après mvt)
             candidates = []
             for dr in (-1, 0, 1):
                 for dc in (-1, 0, 1):
@@ -414,7 +414,7 @@ class TeekoGame:
                     self.board[sr][sc] = EMPTY
                     self.board[tr][tc] = player
 
-        # after applying, check win and advance turn
+        # après application, vérif victoire et avancer tour
         self.pos_nb += 1
         if self.check_win_board(self.board, player):
             self.draw_board()
@@ -424,22 +424,22 @@ class TeekoGame:
             self.draw_board()
             self.end_game_draw()
             return
-        # next turn
+        # tour suivant
         self.turn = PLAYER1 if self.turn == PLAYER2 else PLAYER2
         self.draw_board()
-        # schedule AI if needed
+        # planifier IA si nécessaire
         if self.ai_mode and self.turn == self.ai_side:
             self.root.after(200, self.ai_play)
 
     # ---------------- Minimax (alpha-beta) ----------------
     def minimax(self, board, depth, alpha, beta, maximizing, perspective_player=None):
-        # If perspective_player not provided, use ai_side (for backward compatibility)
+        # Si perspective_player pas fourni, utiliser ai_side (rétrocompat)
         if perspective_player is None:
             perspective_player = self.ai_side
         
         opponent = PLAYER2 if perspective_player == PLAYER1 else PLAYER1
         
-        # terminal checks on this board
+        # vérifs terminales sur ce board
         if self.check_win_board(board, perspective_player):
             return None, 100000
         if self.check_win_board(board, opponent):
@@ -449,7 +449,7 @@ class TeekoGame:
 
         player = perspective_player if maximizing else opponent
         targets = self.get_all_targets(board, player)
-        # order moves by heuristic
+        # trier mvts par heuristique
         targets.sort(key=lambda t: -self.move_order_heur(board, t, player))
 
         best_move = None
@@ -479,7 +479,7 @@ class TeekoGame:
             return best_move, min_eval
 
     def move_order_heur(self, board, target, player):
-        # prefer center and adjacency to allies
+        # préférer centre et adjacence aux alliés
         r, c = target
         center = (SIZE-1)/2
         center_score = - (abs(r-center) + abs(c-center))
@@ -494,14 +494,14 @@ class TeekoGame:
 
     # ---------------- Evaluation ----------------
     def evaluate_board(self, board):
-        """Legacy method for backward compatibility - evaluates from ai_side perspective."""
+        """Méthode legacy pr rétrocompat - évalue depuis perspective ai_side."""
         return self.evaluate_board_for_player(board, self.ai_side)
     
     def evaluate_board_for_player(self, board, perspective_player):
-        """Evaluate board from the perspective of a specific player."""
+        """Evaluer board depuis perspective d'un joueur spécifique."""
         opponent = PLAYER2 if perspective_player == PLAYER1 else PLAYER1
         
-        # check immediate wins/losses
+        # vérif victoires/défaites imm
         if self.check_win_board(board, perspective_player): 
             return 100000
         if self.check_win_board(board, opponent): 
@@ -510,7 +510,7 @@ class TeekoGame:
         def seq_score_for(player):
             score = 0
             sequences = []
-            # rows
+            # lignes
             for r in range(SIZE):
                 for c in range(SIZE-3):
                     sequences.append([board[r][c+i] for i in range(4)])
@@ -538,7 +538,7 @@ class TeekoGame:
 
         score = seq_score_for(perspective_player) - seq_score_for(opponent)
 
-        # center control small bonus
+        # bonus contrôle centre
         center = (SIZE-1)/2
         for r in range(SIZE):
             for c in range(SIZE):
@@ -549,10 +549,10 @@ class TeekoGame:
 
         return score
 
-# ------------------ AI vs AI Class ------------------
+# ------------------ Classe IA vs IA ------------------
 class TeekoGameAIvsAI(TeekoGame):
     def __init__(self, root, *, ai1_level=3, ai2_level=3, step_mode=False, return_to_menu_cb=None):
-        # AI vs AI: override parent AI scheduling
+        # IA vs IA: override planif IA parent
         super().__init__(root, ai_mode=True, human_side=PLAYER1, minimax_depth=3,
                          show_eval=False, return_to_menu_cb=return_to_menu_cb)
         self.ai1_level = ai1_level
@@ -561,28 +561,28 @@ class TeekoGameAIvsAI(TeekoGame):
         self.turn = PLAYER1
         self.total_pieces = 0
 
-        # Disable parent AI scheduling
+        # Désactiver planif IA parent
         self.auto_ai_schedule = False
 
-        # Add labels below the board
-        self.label_ai1 = tk.Label(self.frame, text=f"AI 1: Level {self.ai1_level}, Color {PLAYER1}", font=("Arial", 12))
+        # Ajout labels sous le board
+        self.label_ai1 = tk.Label(self.frame, text=f"AI 1: Niveau {self.ai1_level}, Couleur {PLAYER1}", font=("Arial", 12))
         self.label_ai1.grid(row=2, column=0, pady=6)
 
-        self.label_ai2 = tk.Label(self.frame, text=f"AI 2: Level {self.ai2_level}, Color {PLAYER2}", font=("Arial", 12))
+        self.label_ai2 = tk.Label(self.frame, text=f"AI 2: Niveau {self.ai2_level}, Couleur {PLAYER2}", font=("Arial", 12))
         self.label_ai2.grid(row=2, column=2, pady=6)
 
-        # Step button for manual mode
+        # Bouton étape pr mode manuel
         if self.step_mode:
-            self.btn_next = tk.Button(self.frame, text="Next Turn", command=self.next_turn)
+            self.btn_next = tk.Button(self.frame, text="Tour suivant", command=self.next_turn)
             self.btn_next.grid(row=2, column=1, pady=6)
 
-        # Start first move automatically if auto mode
+        # Démarrer 1er mvt auto si mode auto
         if not self.step_mode:
             self.root.after(300, self.ai_turn)
 
-    # Override to remove automatic turn advancement in parent
+    # Override pr retirer avancement auto du tour dans parent
     def apply_target(self, target, player):
-        """Apply a move without switching turns automatically."""
+        """Appliquer un mvt sans changer tour automatiquement."""
         if self.total_pieces < 8:
             r, c = target
             self.board[r][c] = player
@@ -598,7 +598,7 @@ class TeekoGameAIvsAI(TeekoGame):
                     if 0<=sr<SIZE and 0<=sc<SIZE and self.board[sr][sc]==player:
                         candidates.append((sr, sc))
             if candidates:
-                # Choose best source using evaluation
+                # Choisir meilleure source via éval
                 best_src = None
                 best_score = -math.inf
                 for (sr, sc) in candidates:
@@ -615,10 +615,10 @@ class TeekoGameAIvsAI(TeekoGame):
                     self.board[tr][tc] = player
 
         self.draw_board()
-        # check for win
+        # vérif victoire
         self.pos_nb += 1
         if self.check_win(player):
-            messagebox.showinfo("Game Over", f"AI {player} Gagne!")
+            messagebox.showinfo("Fin de partie", f"IA {player} gagne!")
             return True
         if self.check_draw(self.turn):
             self.draw_board()
@@ -630,40 +630,40 @@ class TeekoGameAIvsAI(TeekoGame):
         current_ai = self.turn
         depth = self.ai1_level if current_ai==PLAYER1 else self.ai2_level
         
-        # First: check for immediate win or block
+        # D'abord: vérif victoire ou blocage imm
         immediate = self.find_immediate_win_or_block_aivsai(current_ai)
         if immediate is not None:
             game_over = self.apply_target(immediate, current_ai)
             if game_over:
                 return
         else:
-            # Use minimax
-            maximizing = True  # Always maximize for current player
+            # Utiliser minimax
+            maximizing = True  # Tjrs maximiser pr joueur actuel
             move, _ = self.minimax(self.board, depth, -math.inf, math.inf, maximizing=maximizing, perspective_player=current_ai)
             if move:
                 game_over = self.apply_target(move, current_ai)
                 if game_over:
                     return
 
-        # Switch turn manually
+        # Changer tour manuellement
         self.turn = PLAYER1 if self.turn==PLAYER2 else PLAYER2
 
-        # Schedule next turn only in auto mode
+        # Planifier tour suivant seulement en mode auto
         if not self.step_mode:
             self.root.after(1000, self.ai_turn)
     
     def find_immediate_win_or_block_aivsai(self, current_ai):
-        """Find immediate win or block for AI vs AI mode."""
+        """Trouver victoire ou blocage imm pr mode IA vs IA."""
         opponent = PLAYER2 if current_ai==PLAYER1 else PLAYER1
         
-        # Check if current AI can win immediately
+        # Vérif si IA actuelle peut gagner imm
         ai_targets = self.get_all_targets(self.board, current_ai)
         for t in ai_targets:
             newb = self.simulate_move(self.board, t, current_ai)
             if self.check_win_board(newb, current_ai):
                 return t
         
-        # Check if opponent threatens to win -> block
+        # Vérif si adversaire menace de gagner -> bloquer
         opp_targets = self.get_all_targets(self.board, opponent)
         for t in opp_targets:
             newb = self.simulate_move(self.board, t, opponent)
@@ -674,15 +674,15 @@ class TeekoGameAIvsAI(TeekoGame):
         return None
 
     def next_turn(self):
-        """Manual step mode: execute a single AI move."""
+        """Mode étape manuelle: exécuter un seul mvt IA."""
         self.ai_turn()
 
-    # Override _info_text to hide human/AI labels
+    # Override _info_text pr masquer labels humain/IA
     def _info_text(self):
         return f"Tour: {self.turn}"
 
 
-# ------------------ Menu / Settings UI ------------------
+# ------------------ Menu / Paramètres UI ------------------
 class TeekoMenu:
     def __init__(self):
         self.root = tk.Tk()
@@ -690,17 +690,17 @@ class TeekoMenu:
         self.root.state('zoomed')
 
         self.ai_difficulty = "Moyen"
-        self.human_color = PLAYER1  # default human = X
+        self.human_color = PLAYER1
         self.show_eval = False
 
         tk.Label(self.root, text="Bienvenue dans Teeko !", font=("Arial", 16, "bold"), 
                  fg="#333333", bg="#f0f0f0").pack(pady=10)
 
-        btn_pvp = tk.Button(self.root, text="🎮 Jouer à deux", command=self.start_pvp)
+        btn_pvp = tk.Button(self.root, text="Jouer à deux", command=self.start_pvp)
         btn_pvp.pack(pady=6)
         style_button(btn_pvp)
 
-        btn_vs_ai = tk.Button(self.root, text="🤖 Jouer contre l'IA", command=self.start_vs_ai)
+        btn_vs_ai = tk.Button(self.root, text="Jouer contre l'IA", command=self.start_vs_ai)
         btn_vs_ai.pack(pady=6)
         style_button(btn_vs_ai)
 
@@ -708,7 +708,7 @@ class TeekoMenu:
         btn_ai_vs_ai.pack(pady=6)
         style_button(btn_ai_vs_ai)
 
-        btn_rules = tk.Button(self.root, text="📜 Règles du jeu", command=self.show_rules)
+        btn_rules = tk.Button(self.root, text="Règles du jeu", command=self.show_rules)
         btn_rules.pack(pady=6)
         style_button(btn_rules)
 
@@ -797,7 +797,7 @@ class TeekoMenu:
     def show_rules(self):
         """Display the rules of Teeko in a styled window."""
         rules_text = (
-            "📜 RÈGLES DU JEU TEEKO\n\n"
+            "RÈGLES DU JEU TEEKO\n\n"
             "• Le jeu se joue sur une grille 5×5.\n"
             "• Chaque joueur possède 4 pièces (X et O).\n"
             "• X commence toujours.\n\n"
