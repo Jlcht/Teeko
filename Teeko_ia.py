@@ -4,6 +4,7 @@ from tkinter import messagebox
 import random
 import math
 import copy
+import sys
 
 def style_button(btn):
     btn.configure(bg="#017cbf", fg="#ffffff", font=("Arial", 12, "bold"), bd=0, relief="flat", padx=10, pady=5)
@@ -709,13 +710,17 @@ class TeekoMenu:
         btn_rules.pack(pady=6)
         style_button(btn_rules)
 
-        btn_quit = tk.Button(self.root, text="Quitter", command=self.root.quit)
+        btn_quit = tk.Button(self.root, text="Quitter", command=self.quit_app)
         btn_quit.pack(pady=6)
         style_button(btn_quit)
 
         self.root.configure(bg="#f0f0f0")
 
         self.root.mainloop()
+
+    def quit_app(self):
+        self.root.destroy()
+        sys.exit()
 
     def start_pvp(self):
         self.root.destroy()
